@@ -8,6 +8,9 @@ on:
 jobs:
   generate-dotslash-files:
     runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,6 +26,9 @@ jobs:
         with:
           path: dist/*
           if-no-files-found: error
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/*
 
   validate:
     runs-on: ${{matrix.os}}
