@@ -21,6 +21,9 @@ jobs:
           echo "latest=${LATEST}" >> $GITHUB_OUTPUT
 
   build:
+    permissions:
+      attestations: write
+      id-token: write
     uses: ./.github/workflows/ci.yml
   release:
     needs: [build, check-new-release]
