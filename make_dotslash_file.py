@@ -78,12 +78,12 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     # "windows-aarch64": PlatformConfig(...),
     Platform("windows-x86_64"): PlatformConfig(
-        marker="x86_64-pc-windows-msvc-shared",
+        marker="x86_64-pc-windows-msvc",
         flavor="install_only_stripped",
         path="python/python.exe",
     ),
     Platform("windows-x86_64", free_threaded=True): PlatformConfig(
-        marker="x86_64-pc-windows-msvc-shared",
+        marker="x86_64-pc-windows-msvc",
         flavor="freethreaded+pgo-full",
         path="python/install/python.exe",
     ),
