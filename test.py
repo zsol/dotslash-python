@@ -35,6 +35,7 @@ def main() -> None:
     if dotslash is None:
         print("Dotslash binary cannot be found, failing test.", file=sys.stderr)
         sys.exit(-1)
+        return  # TODO(pyrefly): this shouldn't be necessary
     args = sys.argv[1:]
     descriptor_paths: list[Path] = []
     for arg in args:
