@@ -60,4 +60,4 @@ jobs:
       - uses: actions/setup-python@v5
       - run: pip install pyrefly
       - name: Typecheck
-        run: pyrefly check
+        run: pyrefly check -c pyproject.toml
