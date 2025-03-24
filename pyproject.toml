@@ -1,2 +1,2 @@
-[tool.pyre] # TODO(pyrefly): this should be tool.pyrefly
+[tool.pyrefly]
 project_includes = ['**/*.py'] # TODO(pyrefly): this is the default value
