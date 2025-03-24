@@ -53,3 +53,11 @@ jobs:
       - run: python test.py dist/
         env:
           PYTHONUTF8: 1
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - run: pip install pyrefly
+      - name: Typecheck
+        run: pyrefly check -c pyproject.toml
