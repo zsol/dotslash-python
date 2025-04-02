@@ -58,6 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - run: pip install pyrefly
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - name: Typecheck
-        run: pyrefly check -c pyproject.toml
+        run: uv run pyrefly check

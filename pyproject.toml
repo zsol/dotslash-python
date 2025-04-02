@@ -1,2 +1,10 @@
-[tool.pyrefly]
-project_includes = ['**/*.py'] # TODO(pyrefly): this is the default value
+[project]
+name = "dotslash-python"
+version = "0.1.0"
+description = "A single-file CPython distribution you can check into a repository"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = ["pyrefly>=0.9.0"]
