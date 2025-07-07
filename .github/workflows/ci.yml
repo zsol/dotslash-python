@@ -42,6 +42,7 @@ jobs:
           - macos-latest # arm
           - macos-13 # intel
           - windows-latest
+          - windows-11-arm
           - ubuntu-latest
           - ubuntu-24.04-arm
     needs: generate-dotslash-files
