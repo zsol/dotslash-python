@@ -43,7 +43,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     Platform("linux-aarch64", free_threaded=True): PlatformConfig(
         marker="aarch64-unknown-linux-gnu",
-        flavor="freethreaded+lto-full",
+        flavor="freethreaded+pgo+lto-full",
         path="python/install/bin/python",
     ),
     Platform("linux-x86_64"): PlatformConfig(

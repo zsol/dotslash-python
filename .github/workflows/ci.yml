@@ -14,7 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - run: |
+      - name: Generate dotslash descriptors
+        run: |
           mkdir dist
           for ver in 3.9 3.10 3.11 3.12 3.13 3.14; do
               python make_dotslash_file.py --cpython-version $ver > dist/cpython-$ver
