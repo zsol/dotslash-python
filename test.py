@@ -1,9 +1,9 @@
 import json
-from pathlib import Path
 import shutil
-import sys
 import subprocess
+import sys
 import traceback
+from pathlib import Path
 
 
 def check_path(dotslash: str, path: Path) -> None:
