@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from urllib.parse import unquote, urljoin
 import urllib.request
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -165,6 +166,41 @@ def find_asset_for_platform(
 ALLOWED_EXTENSIONS = ["tar.gz", "tar.zst"]
 
 
+# Module-level cache for SHA256SUMS: {release_tag: {filename: digest}}
+_sha256sums_cache: dict[str, dict[str, str]] = {}
+
+
+def _fetch_and_cache_sha256sums(asset_url: str) -> dict[str, str]:
+    sha256sums_url = urljoin(asset_url, "SHA256SUMS")
+    release_tag = unquote(sha256sums_url.rsplit("/", 2)[-2])  # e.g., 20250708
+    if release_tag in _sha256sums_cache:
+        return _sha256sums_cache[release_tag]
+    with request(sha256sums_url) as response:
+        if response.status != 200:
+            raise RuntimeError(
+                f"Failed to fetch SHA256SUMS: {sha256sums_url} {response=}"
+            )
+        data: str = response.read().decode()
+    digest_map: dict[str, str] = {}
+    for line in data.splitlines():
+        if not line.strip():
+            continue
+        parts = line.split()
+        if len(parts) == 2:
+            digest, filename = parts
+            digest_map[filename] = digest
+    _sha256sums_cache[release_tag] = digest_map
+    return digest_map
+
+
+def fetch_sha256_digest(browser_download_url: str) -> str:
+    digest_map = _fetch_and_cache_sha256sums(browser_download_url)
+    filename = unquote(browser_download_url.rsplit("/", 1)[-1])
+    if filename in digest_map:
+        return digest_map[filename]
+    raise RuntimeError(f"Digest for {filename} not found in SHA256SUMS")
+
+
 def platform_descriptor(platform: Platform, asset: Asset) -> object:
     extension = None
     for ext in ALLOWED_EXTENSIONS:
@@ -174,12 +210,8 @@ def platform_descriptor(platform: Platform, asset: Asset) -> object:
         raise ValueError(
             f"Asset for {platform=} isn't supported by dotslash: {asset.browser_download_url}"
         )
-    with request(f"{asset.browser_download_url}.sha256") as response:
-        if response.status != 200:
-            raise RuntimeError(
-                f"Failed to fetch digest for {asset.browser_download_url}: {response=}"
-            )
-        digest = bytes(response.read().strip()).decode()
+
+    digest = fetch_sha256_digest(asset.browser_download_url)
     return {
         "size": asset.size,
         "hash": "sha256",
