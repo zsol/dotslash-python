@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import argparse
-from typing import Final
-import urllib.request
 import json
+import os
+import urllib.request
+from contextlib import contextmanager
 from dataclasses import dataclass
+from tempfile import _TemporaryFileWrapper
+from typing import Final, Generator, Protocol
 
 
 @dataclass(frozen=True)
@@ -90,8 +95,28 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
 }
 
 
+class _Response(Protocol):
+    def info(self) -> dict[str, str]: ...
+
+    @property
+    def status(self) -> int | None: ...
+
+
+class Response(_Response, _TemporaryFileWrapper):
+    pass
+
+
+@contextmanager
+def request(url: str) -> Generator[Response, None, None]:
+    token = os.environ.get("GITHUB_TOKEN")
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req) as response:
+        yield response
+
+
 def fetch_latest_release() -> Release:
-    with urllib.request.urlopen(
+    with request(
         "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest"
     ) as response:
         if response.status != 200:
@@ -149,7 +174,7 @@ def platform_descriptor(platform: Platform, asset: Asset) -> object:
         raise ValueError(
             f"Asset for {platform=} isn't supported by dotslash: {asset.browser_download_url}"
         )
-    with urllib.request.urlopen(f"{asset.browser_download_url}.sha256") as response:
+    with request(f"{asset.browser_download_url}.sha256") as response:
         if response.status != 200:
             raise RuntimeError(
                 f"Failed to fetch digest for {asset.browser_download_url}: {response=}"
