@@ -8,7 +8,9 @@ import urllib.request
 from contextlib import contextmanager
 from dataclasses import dataclass
 from tempfile import _TemporaryFileWrapper
-from typing import Final, Generator, Protocol
+from typing import Final, Generator, Protocol, Any
+import atexit
+import tempfile
 
 
 @dataclass(frozen=True)
@@ -82,7 +84,16 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
         flavor="freethreaded+pgo+lto-full",
         path="python/install/bin/python",
     ),
-    # "windows-aarch64": PlatformConfig(...),
+    Platform("windows-aarch64"): PlatformConfig(
+        marker="aarch64-pc-windows-msvc",
+        flavor="install_only_stripped",
+        path="python/python.exe",
+    ),
+    Platform("windows-aarch64", free_threaded=True): PlatformConfig(
+        marker="aarch64-pc-windows-msvc",
+        flavor="freethreaded+pgo-full",
+        path="python/install/python.exe",
+    ),
     Platform("windows-x86_64"): PlatformConfig(
         marker="x86_64-pc-windows-msvc",
         flavor="install_only_stripped",
@@ -241,6 +252,8 @@ def main() -> None:
         )
         for platform in PLATFORMS.keys()
         if platform.free_threaded == args.free_threaded
+        # windows-aarch64 builds start at 3.11
+        if not (platform.name == "windows-aarch64" and version in {"3.9", "3.10"})
     }
     version_suffix = "t" if args.free_threaded else ""
     descriptor = {
