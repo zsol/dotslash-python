@@ -40,7 +40,6 @@ jobs:
       matrix:
         os:
           - macos-latest # arm
-          - macos-13 # intel
           - windows-latest
           - windows-11-arm
           - ubuntu-latest
