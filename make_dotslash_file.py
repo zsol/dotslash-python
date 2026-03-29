@@ -3,14 +3,12 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from urllib.parse import unquote, urljoin
 import urllib.request
 from contextlib import contextmanager
 from dataclasses import dataclass
 from tempfile import _TemporaryFileWrapper
-from typing import Final, Generator, Protocol, Any
-import atexit
-import tempfile
+from typing import Final, Generator, Protocol
+from urllib.parse import unquote, urljoin
 
 
 @dataclass(frozen=True)
@@ -51,7 +49,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     Platform("linux-aarch64", free_threaded=True): PlatformConfig(
         marker="aarch64-unknown-linux-gnu",
-        flavor="freethreaded+pgo+lto-full",
+        flavor="freethreaded-install_only_stripped",
         path="python/install/bin/python",
     ),
     Platform("linux-x86_64"): PlatformConfig(
@@ -61,7 +59,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     Platform("linux-x86_64", free_threaded=True): PlatformConfig(
         marker="x86_64_v3-unknown-linux-gnu",
-        flavor="freethreaded+pgo+lto-full",
+        flavor="freethreaded-install_only_stripped",
         path="python/install/bin/python",
     ),
     Platform("macos-aarch64"): PlatformConfig(
@@ -71,7 +69,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     Platform("macos-aarch64", free_threaded=True): PlatformConfig(
         marker="aarch64-apple-darwin",
-        flavor="freethreaded+pgo+lto-full",
+        flavor="freethreaded-install_only_stripped",
         path="python/install/bin/python",
     ),
     Platform("macos-x86_64"): PlatformConfig(
@@ -81,7 +79,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     Platform("macos-x86_64", free_threaded=True): PlatformConfig(
         marker="x86_64-apple-darwin",
-        flavor="freethreaded+pgo+lto-full",
+        flavor="freethreaded-install_only_stripped",
         path="python/install/bin/python",
     ),
     Platform("windows-aarch64"): PlatformConfig(
@@ -91,7 +89,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     Platform("windows-aarch64", free_threaded=True): PlatformConfig(
         marker="aarch64-pc-windows-msvc",
-        flavor="freethreaded+pgo-full",
+        flavor="freethreaded-install_only_stripped",
         path="python/install/python.exe",
     ),
     Platform("windows-x86_64"): PlatformConfig(
@@ -101,7 +99,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     ),
     Platform("windows-x86_64", free_threaded=True): PlatformConfig(
         marker="x86_64-pc-windows-msvc",
-        flavor="freethreaded+pgo-full",
+        flavor="freethreaded-install_only_stripped",
         path="python/install/python.exe",
     ),
 }
@@ -162,6 +160,8 @@ def find_asset_for_platform(
         if asset.name.endswith(".sha256"):
             continue
         if platform_cfg.marker in asset.name and platform_cfg.flavor in asset.name:
+            if not platform.free_threaded and "freethreaded" in asset.name:
+                continue
             ret.append(asset)
     if len(ret) > 1:
         raise ValueError(
