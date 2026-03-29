@@ -50,7 +50,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     Platform("linux-aarch64", free_threaded=True): PlatformConfig(
         marker="aarch64-unknown-linux-gnu",
         flavor="freethreaded-install_only_stripped",
-        path="python/install/bin/python",
+        path="python/bin/python",
     ),
     Platform("linux-x86_64"): PlatformConfig(
         marker="x86_64_v3-unknown-linux-gnu",
@@ -60,7 +60,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     Platform("linux-x86_64", free_threaded=True): PlatformConfig(
         marker="x86_64_v3-unknown-linux-gnu",
         flavor="freethreaded-install_only_stripped",
-        path="python/install/bin/python",
+        path="python/bin/python",
     ),
     Platform("macos-aarch64"): PlatformConfig(
         marker="aarch64-apple-darwin",
@@ -70,7 +70,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     Platform("macos-aarch64", free_threaded=True): PlatformConfig(
         marker="aarch64-apple-darwin",
         flavor="freethreaded-install_only_stripped",
-        path="python/install/bin/python",
+        path="python/bin/python",
     ),
     Platform("macos-x86_64"): PlatformConfig(
         marker="x86_64-apple-darwin",
@@ -80,7 +80,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     Platform("macos-x86_64", free_threaded=True): PlatformConfig(
         marker="x86_64-apple-darwin",
         flavor="freethreaded-install_only_stripped",
-        path="python/install/bin/python",
+        path="python/bin/python",
     ),
     Platform("windows-aarch64"): PlatformConfig(
         marker="aarch64-pc-windows-msvc",
@@ -90,7 +90,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     Platform("windows-aarch64", free_threaded=True): PlatformConfig(
         marker="aarch64-pc-windows-msvc",
         flavor="freethreaded-install_only_stripped",
-        path="python/install/python.exe",
+        path="python/python.exe",
     ),
     Platform("windows-x86_64"): PlatformConfig(
         marker="x86_64-pc-windows-msvc",
@@ -100,7 +100,7 @@ PLATFORMS: Final[dict[Platform, PlatformConfig]] = {
     Platform("windows-x86_64", free_threaded=True): PlatformConfig(
         marker="x86_64-pc-windows-msvc",
         flavor="freethreaded-install_only_stripped",
-        path="python/install/python.exe",
+        path="python/python.exe",
     ),
 }
 
