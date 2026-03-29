@@ -16,12 +16,18 @@ def check_path(dotslash: str, path: Path) -> None:
     version = name.removeprefix("cpython-")
     free_threaded = version.endswith("t")
     version = version.removesuffix("t")
-    proc = subprocess.run(
-        [dotslash, path, "-c", "import sys; print(sys.version)"],
-        text=True,
-        capture_output=True,
-        check=True,
-    )
+    try:
+        proc = subprocess.run(
+            [dotslash, path, "-c", "import sys; print(sys.version)"],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"❌{path}")
+        print(e.stdout)
+        print(e.stderr)
+        raise
     if not proc.stdout.startswith(version):
         raise AssertionError(f"{version=} not found in {proc.stdout=}")
     is_free_threading_build = "free-threading build" in proc.stdout
