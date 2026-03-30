@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   generate-dotslash-files:
     runs-on: ubuntu-latest
@@ -12,8 +15,10 @@ jobs:
       attestations: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       - name: Generate dotslash descriptors
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -25,11 +30,11 @@ jobs:
           for ver in 3.13 3.14 3.15; do
               python make_dotslash_file.py --free-threaded --cpython-version $ver > dist/cpython-${ver}t
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           path: dist/*
           if-no-files-found: error
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: dist/*
 
@@ -46,23 +51,26 @@ jobs:
           - ubuntu-24.04-arm
     needs: generate-dotslash-files
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: dist
           merge-multiple: true
-      - uses: facebook/install-dotslash@v2
-      - uses: actions/setup-python@v5
-      - run: python test.py dist/
+      - uses: facebook/install-dotslash@1e4e7b3e07eaca387acb98f1d4720e0bee8dbb6a # v2
+      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+      - run: uv run test.py dist/
         env:
           PYTHONUTF8: 1
   typecheck:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
       - name: Typecheck
         run: uv run pyrefly check
