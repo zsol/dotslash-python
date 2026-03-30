@@ -15,10 +15,10 @@ jobs:
     steps:
       - id: check
         run: |
-          UPSTREAM_LATEST=$(curl https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest | jq -r .name)
-          echo "upstream_latest=${UPSTREAM_LATEST}" >> $GITHUB_OUTPUT
+          UPSTREAM_LATEST=$(curl https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest | jq -r .tag_name)
+          echo "upstream_latest=${UPSTREAM_LATEST}" | tee -a $GITHUB_OUTPUT
           LATEST=$(curl https://api.github.com/repos/${{github.repository}}/releases/latest | jq -r .name)
-          echo "latest=${LATEST}" >> $GITHUB_OUTPUT
+          echo "latest=${LATEST}" | tee -a $GITHUB_OUTPUT
 
   build:
     permissions:
