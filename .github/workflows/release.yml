@@ -43,8 +43,11 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: Publish release
-        run: |
-          gh release create "$UPSTREAM_LATEST" -t "$UPSTREAM_LATEST" -n "See https://github.com/astral-sh/python-build-standalone/releases/tag/$UPSTREAM_LATEST" dist/*
+      - name: Create release
         env:
-          UPSTREAM_LATEST: ${{needs.check-new-release.outputs.upstream_latest}}
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ needs.check-new-release.outputs.upstream_latest }}
+        run: |
+          gh release create "$TAG_NAME" dist/* \
+            --title "$TAG_NAME" \
+            --notes "See https://github.com/astral-sh/python-build-standalone/releases/tag/$TAG_NAME"
