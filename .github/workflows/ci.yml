@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_call:
+    inputs:
+      upstream-tag:
+        description: python-build-standalone release tag to use for every descriptor
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -25,13 +30,17 @@ jobs:
       - name: Generate dotslash descriptors
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.upstream-tag }}
         run: |
+          if [[ -z "$RELEASE_TAG" ]]; then
+              RELEASE_TAG=$(python -c 'from make_dotslash_file import fetch_release; print(fetch_release().tag_name)')
+          fi
           mkdir dist
           for ver in 3.11 3.12 3.13 3.14 3.15 3.16; do
-              python make_dotslash_file.py --cpython-version $ver > dist/cpython-$ver
+              python make_dotslash_file.py --release-tag "$RELEASE_TAG" --cpython-version $ver > dist/cpython-$ver
           done
           for ver in 3.13 3.14 3.15 3.16; do
-              python make_dotslash_file.py --free-threaded --cpython-version $ver > dist/cpython-${ver}t
+              python make_dotslash_file.py --release-tag "$RELEASE_TAG" --free-threaded --cpython-version $ver > dist/cpython-${ver}t
           done
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

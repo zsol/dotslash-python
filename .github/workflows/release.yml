@@ -7,34 +7,45 @@ on:
 
 jobs:
   check-new-release:
-    permissions: {}
+    permissions:
+      contents: read
     name: Check for new release in upstream repo
     runs-on: ubuntu-latest
     outputs:
-      upstream_latest: ${{steps.check.outputs.upstream_latest}}
-      latest: ${{steps.check.outputs.latest}}
+      upstream_tag: ${{steps.check.outputs.upstream_tag}}
+      new_release: ${{steps.check.outputs.new_release}}
     steps:
       - id: check
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          UPSTREAM_LATEST=$(curl https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest | jq -r .tag_name)
-          echo "upstream_latest=${UPSTREAM_LATEST}" | tee -a $GITHUB_OUTPUT
-          LATEST=$(curl https://api.github.com/repos/${{github.repository}}/releases/latest | jq -r .name)
-          echo "latest=${LATEST}" | tee -a $GITHUB_OUTPUT
+          UPSTREAM_TAG=$(curl --fail --silent --show-error \
+            --header "Authorization: Bearer $GITHUB_TOKEN" \
+            https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest \
+            | jq -er '.tag_name')
+          LATEST_TAG=$(curl --fail --silent --show-error \
+            --header "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" \
+            | jq -er '.tag_name')
+          NEW_RELEASE=false
+          if [[ "$LATEST_TAG" != "$UPSTREAM_TAG" ]]; then
+            NEW_RELEASE=true
+          fi
+          printf 'upstream_tag=%s\nnew_release=%s\n' "$UPSTREAM_TAG" "$NEW_RELEASE" >> "$GITHUB_OUTPUT"
 
   build:
+    needs: check-new-release
+    if: ${{ needs.check-new-release.outputs.new_release == 'true' }}
     permissions:
       attestations: write
       id-token: write
       contents: read
     uses: ./.github/workflows/ci.yml
+    with:
+      upstream-tag: ${{ needs.check-new-release.outputs.upstream_tag }}
   release:
     needs: [build, check-new-release]
-    if: ${{
-      ! startsWith(
-      needs.check-new-release.outputs.latest,
-      needs.check-new-release.outputs.upstream_latest
-      )
-      }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -47,7 +58,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          TAG_NAME: ${{ needs.check-new-release.outputs.upstream_latest }}
+          TAG_NAME: ${{ needs.check-new-release.outputs.upstream_tag }}
         run: |
           gh release create "$TAG_NAME" dist/* \
             --title "$TAG_NAME" \
