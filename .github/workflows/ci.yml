@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  UV_LOCKED: "true"
+
 jobs:
   generate-dotslash-files:
     runs-on: ubuntu-latest
