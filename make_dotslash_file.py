@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from tempfile import _TemporaryFileWrapper
 from typing import Final, Generator, Protocol
-from urllib.parse import unquote, urljoin
+from urllib.parse import quote, unquote, urljoin
 
 
 @dataclass(frozen=True)
@@ -125,16 +125,26 @@ def request(url: str) -> Generator[Response, None, None]:
         yield response
 
 
-def fetch_latest_release() -> Release:
+def fetch_release(tag: str | None = None) -> Release:
+    endpoint = "latest" if tag is None else f"tags/{quote(tag, safe='')}"
     with request(
-        "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest"
+        f"https://api.github.com/repos/astral-sh/python-build-standalone/releases/{endpoint}"
     ) as response:
         if response.status != 200:
             raise RuntimeError(f"Failed to fetch release info: {response.status}")
         release_data = json.loads(response.read())
+        tag_name = release_data.get("tag_name")
+        if (
+            not isinstance(tag_name, str)
+            or not tag_name
+            or any(char.isspace() for char in tag_name)
+        ):
+            raise ValueError("Release response has an invalid tag_name")
+        if tag is not None and tag_name != tag:
+            raise ValueError(f"Requested release {tag!r}, got {tag_name!r}")
         return Release(
             name=release_data["name"],
-            tag_name=release_data["tag_name"],
+            tag_name=tag_name,
             draft=release_data["draft"],
             prerelease=release_data["prerelease"],
             assets=[
@@ -240,12 +250,15 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--cpython-version", default="3.13")
     parser.add_argument(
+        "--release-tag", help="Pin the python-build-standalone release (default: latest)"
+    )
+    parser.add_argument(
         "--free-threaded", action="store_true", help="Look for free-threaded builds"
     )
     args = parser.parse_args()
     version = args.cpython_version
     assert isinstance(version, str)
-    rel = fetch_latest_release()
+    rel = fetch_release(args.release_tag)
     platform_descriptors = {
         platform.name: platform_descriptor(
             platform, find_asset_for_platform(rel, version, platform)
