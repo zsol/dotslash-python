@@ -24,10 +24,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir dist
-          for ver in 3.10 3.11 3.12 3.13 3.14 3.15; do
+          for ver in 3.11 3.12 3.13 3.14 3.15 3.16; do
               python make_dotslash_file.py --cpython-version $ver > dist/cpython-$ver
           done
-          for ver in 3.13 3.14 3.15; do
+          for ver in 3.13 3.14 3.15 3.16; do
               python make_dotslash_file.py --free-threaded --cpython-version $ver > dist/cpython-${ver}t
           done
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
